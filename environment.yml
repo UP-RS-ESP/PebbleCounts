@@ -60,7 +60,7 @@ dependencies:
   - pytz=2018.9
   - pywavelets=1.0.1
   - qt=5.9.7
-  - scikit-image=0.14.1
+  - scikit-image=0.17.2
   - scikit-learn=0.20.2
   - scipy=1.2.0
   - setuptools=40.6.3
