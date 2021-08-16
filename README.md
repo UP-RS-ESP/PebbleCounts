@@ -38,12 +38,7 @@ PebbleCounts has a number of important dependencies including [gdal](https://www
 ### For Windows
 Once you've got `conda` commands installed, you can open a command-line terminal and create a conda environment with:
 ```
-conda create --name pebblecounts python=3.6 opencv shapely \
-   scikit-image scikit-learn numpy gdal scipy matplotlib tk
-```
-Or just use the `.yml` file provided with:
-```
-conda env create -f environment.yml
+conda create --name pebblecounts python=3.6 opencv shapely scikit-image scikit-learn numpy gdal scipy matplotlib tk
 ```
 and once installation is complete (and assuming no errors during the install) activate the new environment to run PebbleCounts by:
 ```
@@ -59,8 +54,7 @@ Those using Mac OS or Linux shouldn't have much trouble modifying the above comm
 
 Similar to the above, once you have `conda` installed we create the virtual environment:
 ```
-conda create --name pebblecounts python=3.6 shapely \
-   scikit-image scikit-learn numpy gdal scipy matplotlib tk
+conda create --name pebblecounts python=3.6 shapely scikit-image scikit-learn numpy gdal scipy matplotlib tk
 ```
 and once installation is complete (and assuming no errors during the install) activate the new environment by:
 ```
