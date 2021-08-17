@@ -2,7 +2,7 @@
 title: "*Installing and Running PebbleCounts*"
 subtitle: "Grain-sizing algorithm for gravel-bed river imagery"
 subject: "Geomorphology"
-date: "March 2019"
+date: "August 2021"
 author: "Ben Purinton ([purinton@uni-potsdam.de](purinton@uni-potsdam.de))"
 keywords: [grain size, rivers, geomorphology]
 titlepage: true
@@ -37,10 +37,10 @@ PebbleCounts is a free (released under GNU General Public License v3.0) and open
 Georeferenced ortho-photos should be in a [**UTM projection**](https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system), providing the scale in meters. You can use the [gdal](https://www.gdal.org/) command line utilities to [translate rasters between various projections](https://www.nceas.ucsb.edu/scicomp/recipes/gdal-reproject). Because PebbleCounts doesn't allow you to save work in the middle of clicking it's recommended that you don't use images covering areas of more than 2 by 2 meters or so. Furthermore, the algorithm is most effective on images of 0.8-1.2 mm/pixel resolution, where a lower cutoff of 20-pixels is appropriate. Resampling can also be accomplished quickly in [gdal](https://www.gdal.org/). For higher resolution (< 0.8 mm/pixel) imagery it's recommended not to go above 1 by 1 meter areas, particularly if there are many < 1 cm pebbles. If you want to cover a larger area simply break the image into smaller parts and process each individually, so you can give yourself a break. If at anytime you want to end the application simply press *CTRL + C*.
 
 ## The PebbleCountsAuto Function
-In addition to the manual-clicking version of PebbleCounts based on k-means segmentation, we have also developed and included an automated version that has higher uncertainties. We recommend using PebbleCounts in a subset of data to validate larger areas run in PebbleCountsAuto. The description of the automatic algorithm and uncertainties can be found in the publication ([https://doi.org/10.5194/esurf-2019-20](https://doi.org/10.5194/esurf-2019-20)).
+In addition to the manual-clicking version of PebbleCounts based on k-means segmentation, we have also developed and included an automated version that has higher uncertainties. We recommend using PebbleCounts in a subset of data to validate larger areas run in PebbleCountsAuto. The description of the automatic algorithm and uncertainties can be found in the publication: [https://doi.org/10.5194/esurf-7-859-2019](https://doi.org/10.5194/esurf-7-859-2019). Validation steps using both methods are shown in detail in another publication: [https://doi.org/10.1029/2021JF006260](https://doi.org/10.1029/2021JF006260).
 
 # Installation
-The first step is downloading the GitHub repository somewhere on your computer, and unzipping it. There you will find the Python algorithms (e.g., `PebbleCounts.py`), an `environment.yml` file containing the Python dependencies for quick installs with `conda` on Windows, a folder `example_data` with two example images one orthorectified and the other raw, and a folder `docs` containing this manual.
+The first step is downloading the GitHub repository somewhere on your computer, and unzipping it. There you will find the Python algorithms (e.g., `PebbleCounts.py`), a folder `example_data` with two example images one orthorectified and the other raw, a jupyter notebook `Read_and_Plot_PebbleCounts_CSV.ipynb` with a tutorial on how to manipulate output grain-size distribution .csv files, and a folder `docs` containing the [full manual](docs/PebbleCounts_Manual.pdf).
 
 For newcomers to Python, no worries! Installation should be a cinch on most machines. First, you'll want the [Miniconda](https://conda.io/miniconda.html) Python package manager to setup a new Python environment for running the algorithm ([see this good article on Python package management](https://medium.freecodecamp.org/why-you-need-python-environments-and-how-to-manage-them-with-conda-85f155f4353c)). Download either the 32- or 64-bit Miniconda installer of Python 3.x then follow the instructions (either using the `.exe` file for Windows, `.pkg` for Mac, or `bash installer` for Linux). Add Miniconda to the system `PATH` variable when prompted.
 
@@ -51,10 +51,6 @@ Once you've got `conda` commands installed, you can open a command-line terminal
 ```
 conda create --name pebblecounts python=3.6 opencv shapely \
    scikit-image scikit-learn numpy gdal scipy matplotlib tk
-```
-Or just use the `.yml` file provided with:
-```
-conda env create -f environment.yml
 ```
 and once installation is complete (and assuming no errors during the install) activate the new environment to run PebbleCounts by:
 ```
@@ -249,9 +245,9 @@ optional arguments:
                         Size of bilateral filtering windows for the different
                         scales. DEFAULT=[9, 5, 3]
   -tophat_th TOPHAT_TH  Top percentile threshold to take from tophat filter
-                        for edge detection. DEFAULT=0.9
+                        for edge detection. DEFAULT=90
   -sobel_th SOBEL_TH    Top percentile threshold to take from sobel filter for
-                        edge detection. DEFAULT=0.9
+                        edge detection. DEFAULT=90
   -canny_sig CANNY_SIG  Canny filtering sigma value for edge detection.
                         DEFAULT=2
   -resize RESIZE        Value to resize windows by should be between 0 and 1.
@@ -310,9 +306,9 @@ optional arguments:
                         Initial denoising non-local means chromaticity
                         filtering strength. DEFAULT=5
   -tophat_th TOPHAT_TH  Top percentile threshold to take from tophat filter
-                        for edge detection. DEFAULT=0.9
+                        for edge detection. DEFAULT=90
   -sobel_th SOBEL_TH    Top percentile threshold to take from sobel filter for
-                        edge detection. DEFAULT=0.9
+                        edge detection. DEFAULT=90
   -canny_sig CANNY_SIG  Canny filtering sigma value for edge detection.
                         DEFAULT=2
   -resize RESIZE        Value to resize windows by should be between 0 and 1.
@@ -350,12 +346,12 @@ python PebbleCounts.py -im example_data\ortho_resolution_1.2mmPerPix.tif -ortho 
 
   * **Non-ortho Imagery With Default Arguments:** (Be sure to set the `-ortho` flag to `n` and also provide the `-input_resolution` in mm/pixel, which can be found as in the above section **Calculate Camera Resolution**.)
 ```
-python PebbleCounts.py -im example_data\nonortho_resolution_0.63mmPerPix.tif -ortho n \
+python PebbleCounts.py -im example_data\nonortho_resolution_0.63mmPerPix.jpg -ortho n \
   -input_resolution 0.63
 ```
   * **Non-ortho Imagery With Modified Arguments:** (Decrease maximum expected grain size. Also, since the resolution of this image is < 0.8 mm/pixel, I've doubled the default values for `-min_sz_factors`)
 ```
-python PebbleCounts.py -im example_data\nonortho_resolution_0.63mmPerPix.tif -ortho n \
+python PebbleCounts.py -im example_data\nonortho_resolution_0.63mmPerPix.jpg -ortho n \
   -input_resolution 0.63 -maxGS 0.2 -min_sz_factors 100 10 2
 ```
 
@@ -410,22 +406,23 @@ The processing of PebbleCountsAuto follows the above steps 1-4, with the option 
 python PebbleCountsAuto.py -im example_data\ortho_resolution_1.2mmPerPix.tif -ortho y
 ```
 
-* **Ortho With Modified Arguments:** (Decrease Sobel and Tophat thresholds to provide more edge detection and decrease the misfit threshold to reduce potential bad measurements.)
+* **Ortho With Modified Arguments:** (Decrease Sobel and Tophat thresholds to provide more edge detection and decrease the misfit threshold to reduce potential bad measurements. Also includes the sand mask generated during the KMS `PebbleCounts.py` run and the Otsu percentage threshold, thus leading to full automation of this run.)
 ```
 python PebbleCountsAuto.py -im example_data\ortho_resolution_1.2mmPerPix.tif -ortho y \
-  -tophat_th 0.85 -sobel_th 0.85 -misfit_threshold 20
+  -sand_mask example_data\ortho_resolution_1.2mmPerPix_PebbleCounts_SandMask_TIFF.tif \
+  -tophat_th 85 -sobel_th 85 -misfit_threshold 20 -otsu_threshold 50
 ```
 
 * **Non-ortho Imagery With Default Arguments:** (Be sure to set the `-ortho` flag to `n` and also provide the `-input_resolution` in mm/pixel, which can be found as in the above section **Calculate Camera Resolution**.)
 ```
-python PebbleCountsAuto.py -im example_data\nonortho_resolution_0.63mmPerPix.tif -ortho n \
+python PebbleCountsAuto.py -im example_data\nonortho_resolution_0.63mmPerPix.jpg -ortho n \
   -input_resolution 0.63
 ```
 
 * **Non-ortho Imagery With Modified Arguments:** (Double the default value for `-min_size_threshold` since the resolution is < 0.8 mm/pixel. Also decrease the Sobel and Tophat thresholds to provide more edge detection given the higher resolution.)
 ```
-python PebbleCountsAuto.py -im example_data\nonortho_resolution_0.63mmPerPix.tif -ortho n \
-  -input_resolution 0.63 -min_size_threshold 20 -tophat_th 0.85 -sobel_th 0.85
+python PebbleCountsAuto.py -im example_data\nonortho_resolution_0.63mmPerPix.jpg -ortho n \
+  -input_resolution 0.63 -min_size_threshold 20 -tophat_th 85 -sobel_th 85
 ```
 
 # Ouput Files
@@ -439,9 +436,15 @@ PebbleCounts(Auto) saves out a few outputs in the same folder that the image res
 
 And if the input is georeferenced imagery:
 
-* binary GeoTiff: `filename_PebbleCounts_SandMask_TIFF.tif` 
+* binary GeoTiff (input for `-sand_mask` command-line argument): `filename_PebbleCounts_SandMask_TIFF.tif`
 * and vector shapefile of the sand mask: `filename_PebbleCounts_SandMask_SHP.shp`
 
-The results .csv has an entry for each grain (Figure \ref{Fig:output_csv}) showing the fraction of the scene not measured (combined background shadow and unmeasured grains) the fraction of the scene that was selected by the color mask as background color (e.g., sand) and each grains' characteristics including a- and b-axis of the fit ellipse in pixels and in meters, the area covered by the grain mask in pixels and square meters, the orientation of the fit ellipse measured from -pi/2 to pi/2 relative to the positive x-axis (orientation=0) in cartesian coordinates, the area of the ellipse, and the percent misfit between the ellipse and the grain given by the percentage difference in area. If the input imagery is georeferenced the UTM Northing (Y) and Easting (X) coordinates of the pebble's centroid are be provided.
+## The CSV File
+
+A detailed example of showing the `PebbleCounts.py` (KMS) and `PebbleCountsAuto.py` (AIF) output .csv files including their contents and how to manipulate them in python is provided in the Jupyter Notebook `Read_and_Plot_PebbleCounts_CSV.ipynb`, which you can view without needing to install anything [HERE](https://github.com/bpurinton/PebbleCounts/blob/master/Read_and_Plot_PebbleCounts_CSV.ipynb).
+
+The results .csv contains the parameters used in the PebbleCounts run to generate the file. This may be useful when testing different parameter combinations to keep track of the results.
+
+The results .csv has an entry for each grain (Figure \ref{Fig:output_csv}) showing the fraction of the scene not measured (combined background shadow and unmeasured grains) the fraction of the scene that was selected by the color mask as background color (e.g., sand) and each grains' characteristics including a- and b-axis of the fit ellipse in pixels and in meters, the area covered by the grain mask in pixels and square meters, the orientation of the fit ellipse measured from -pi/2 to pi/2 relative to the positive x-axis (orientation=0) in cartesian coordinates, the area of the ellipse, and the percent misfit between the ellipse and the grain given by the percentage difference in area. If the input imagery is georeferenced the UTM Northing (Y) and Easting (X) coordinates of the pebble's centroid are provided.
 
 ![Example .csv file output by algorithms for a georeferenced image. The *perc. not meas.* is the fractional percentage of the image that was either shadows or not measured and *perc. background color* is the fractional percentage of the image that was masked during interactive HSV color selection (e.g., for sand). Also, *perc. diff. area* is the percentage difference in area between the ellipse (*ellipse area (px)*) and grain (*area (px)*), or the approximate misfit of the ellipse.\label{Fig:output_csv}](figs/output_csv.png)

@@ -56,9 +56,9 @@ parser.add_argument("-min_size_threshold", type=int,
 parser.add_argument("-first_nl_denoise", type=int,
                     help="Initial denoising non-local means chromaticity filtering strength. DEFAULT=5", default=5)
 parser.add_argument("-tophat_th", type=float,
-                    help="Top percentile threshold to take from tophat filter for edge detection. DEFAULT=0.9", default=0.9)
+                    help="Top percentile threshold to take from tophat filter for edge detection. DEFAULT=90", default=90)
 parser.add_argument("-sobel_th", type=float,
-                    help="Top percentile threshold to take from sobel filter for edge detection. DEFAULT=0.9", default=0.9)
+                    help="Top percentile threshold to take from sobel filter for edge detection. DEFAULT=90", default=90)
 parser.add_argument("-canny_sig", type=int,
                     help="Canny filtering sigma value for edge detection. DEFAULT=2", default=2)
 parser.add_argument("-resize", type=float,
@@ -203,7 +203,8 @@ else:
         otsu_thresholding.percent_of_otsu(otsu_th)
         otsu_thresholding.apply_threshold(gray, bgr, otsu_th, resize)
         if otsu_thresholding.thresh != None:
-            ignore_mask = gray > otsu_th*(otsu_thresholding.thresh/100)
+            otsu_threshold = otsu_thresholding.thresh
+            ignore_mask = gray > otsu_th*(otsu_threshold/100)
             break
 
 # do color masking of sand
@@ -335,7 +336,7 @@ print("\nBeginning segmentation")
 # tophat edges
 print("Black tophat edge detection")
 tophat = morph.black_tophat(gray, selem=morph.selem.disk(1))
-tophat = tophat < np.percentile(tophat, tophat_th*100)
+tophat = tophat < np.percentile(tophat, tophat_th)
 tophat = morph.remove_small_holes(tophat, area_threshold=5, connectivity=2)
 if not np.sum(tophat) == 0:
     foo = func.featAND_fast(ignore_mask, tophat)
@@ -349,7 +350,7 @@ ignore_mask = np.logical_and(foo, ignore_mask)
 # sobel edges
 print("Sobel edge detection")
 sobel = filt.sobel(gray)
-sobel = sobel < np.percentile(sobel, sobel_th*100)
+sobel = sobel < np.percentile(sobel, sobel_th)
 sobel = morph.remove_small_holes(sobel, area_threshold=5, connectivity=2)
 sobel = morph.thin(np.invert(sobel))
 sobel = np.invert(sobel)
@@ -484,16 +485,28 @@ perc_nongrain -= perc_sand
 # output the measured grains as a csv
 with open(csv_out, "w") as csv_file:
     writer=csv.writer(csv_file, delimiter=",",lineterminator="\n",)
+    writer.writerow(["PebbleCounts Parameters"])
+    writer.writerow(["otsu_threshold", "cutoff", "percent_overlap", "misfit_threshold",
+                     "min_size_threshold", "first_nl_denoise",
+                     "tophat_th", "sobel_th", "canny_sig"])
+    writer.writerow([otsu_threshold, cutoff, perc_overlap, misfit_threshold,
+                     min_size, first_nl_denoise,
+                     tophat_th, sobel_th, canny_sig])
+    writer.writerow([])
+    writer.writerow(["Image Details"])
+    writer.writerow(["perc. not meas.", "perc. background color"])
+    writer.writerow([perc_nongrain*100, perc_sand*100])
+    writer.writerow([])
+    writer.writerow(["Pebble Details"])
     if ortho:
-        writer.writerow(["perc. not meas.", "perc. background color",
-                         "UTM X (m)", "UTM Y (m)", "a (px)", "b (px)",
+        writer.writerow(["UTM X (m)", "UTM Y (m)", "a (px)", "b (px)",
                          "a (m)", "b (m)", "area (px)", "area (m2)",
                          "orientation", "ellipse area (px)", "perc. diff. area"])
     if not ortho:
-        writer.writerow(["perc. not meas.", "perc. background color",
-                         "a (px)", "b (px)", "a (m)", "b (m)",
-                         "area (px)", "area (m2)",
+        writer.writerow(["a (px)", "b (px)",
+                         "a (m)", "b (m)", "area (px)", "area (m2)",
                          "orientation", "ellipse area (px)", "perc. diff. area"])
+
     for grain in grains:
         y0, x0 = grain[0], grain[1]
         a, b = grain[3], grain[2]
@@ -505,12 +518,12 @@ with open(csv_out, "w") as csv_file:
         if ortho:
             x_coord = xgrid[np.round(y0).astype(int), np.round(x0).astype(int)]
             y_coord = ygrid[np.round(y0).astype(int), np.round(x0).astype(int)]
-            writer.writerow([perc_nongrain, perc_sand, x_coord, y_coord, a, b,
+            writer.writerow([x_coord, y_coord, a, b,
                              a*step, b*step, area, area*step**2, orientation,
                              ellipseArea, perc_diff_area])
 
         if not ortho:
-            writer.writerow([perc_nongrain, perc_sand, a, b,
+            writer.writerow([a, b,
                              a*step, b*step, area, area*step**2, orientation,
                              ellipseArea, perc_diff_area])
 

@@ -5,15 +5,17 @@ sudo apt install pandoc texlive-latex-recommended texlive-xetex texlive-luatex p
 
 # WITH EISVOGEL
 ```
-d=$(date +%Y-%m-%d)
 pandoc --number-sections --listings -H auto_linebreak_listings.tex \
     --variable papersize=a4paper --variable urlcolor=cyan \
     --toc -V toc-title:"Table of Contents" --variable papersize=a4paper \
-    -s PebbleCounts_Manual_md.md -o PebbleCounts_Manual_${d}.pdf \
+    -s PebbleCounts_Manual_md.md -o PebbleCounts_Manual.pdf \
     --template eisvogel
 ```
+
+# On Windows...
+
 ```
-cp PebbleCounts_Manual_${d}.pdf PebbleCounts_Manual.pdf
+pandoc --number-sections --listings -H auto_linebreak_listings.tex --variable papersize=a4paper --variable urlcolor=cyan --toc -V toc-title:"Table of Contents" --variable papersize=a4paper -s PebbleCounts_Manual_md.md -o PebbleCounts_Manual.pdf --template C:\Users\BenPurinton\AppData\Roaming\pandoc\templates\eisvogel
 ```
 
 ## Breaks hyperlinks! Don't Use:
