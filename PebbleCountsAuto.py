@@ -18,6 +18,7 @@ from skimage import measure as meas
 from skimage import segmentation as segm
 from skimage import feature as feat
 from skimage import morphology as morph
+from skimage.morphology import (square, disk)
 from skimage import filters as filt
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
@@ -275,8 +276,8 @@ else:
             color_mask = np.invert(color_mask).astype(bool)
             # clean it up
             color_mask = morph.remove_small_holes(color_mask, area_threshold=min_size, connectivity=2)
-            color_mask = morph.opening(color_mask, selem=morph.selem.disk(1))
-            color_mask = morph.closing(color_mask, selem=morph.selem.disk(1))
+            color_mask = morph.opening(color_mask, footprint=disk(1))
+            color_mask = morph.closing(color_mask, footprint=disk(1))
             # add the hue mask to the full ignore mask
             ignore_mask = np.logical_and(ignore_mask, color_mask)
             # make the color mask three channel image for stacking
@@ -335,7 +336,7 @@ print("\nBeginning segmentation")
 
 # tophat edges
 print("Black tophat edge detection")
-tophat = morph.black_tophat(gray, selem=morph.selem.disk(1))
+tophat = morph.black_tophat(gray, footprint=disk(1))
 tophat = tophat < np.percentile(tophat, tophat_th)
 tophat = morph.remove_small_holes(tophat, area_threshold=5, connectivity=2)
 if not np.sum(tophat) == 0:
@@ -359,8 +360,8 @@ ignore_mask = np.logical_and(foo, ignore_mask)
 
 # cleanup the mask
 master_mask = morph.remove_small_objects(ignore_mask, min_size=min_size, connectivity=2)
-master_mask = morph.erosion(master_mask, selem=morph.selem.square(3))
-master_mask = morph.dilation(master_mask, selem=morph.selem.square(2))
+master_mask = morph.erosion(master_mask, footprint=square(3))
+master_mask = morph.dilation(master_mask, footprint=square(2))
 master_mask = segm.clear_border(master_mask)
 master_mask = morph.remove_small_objects(master_mask, min_size=min_size, connectivity=2)
 # make sure we didn't accidently add any definite edges back in
@@ -369,7 +370,7 @@ master_mask[ignore_mask == False] = False
 # eliminate any regions that are smaller than cutoff value
 tmp, num = ndi.label(master_mask)
 for region in meas.regionprops(tmp):
-    grain_dil_ = morph.dilation(region.image, selem=morph.selem.square(2)).astype(int)
+    grain_dil_ = morph.dilation(region.image, footprint=square(2)).astype(int)
     grain_dil_ = np.pad(grain_dil_, ((1, 1), (1,1)), 'constant')
     b_ = meas.regionprops(grain_dil_)[0].minor_axis_length
     a_ = meas.regionprops(grain_dil_)[0].major_axis_length
@@ -389,7 +390,7 @@ print("Getting grain properties")
 labels, _ = ndi.label(master_mask)
 for grain in meas.regionprops(labels):
     # dilate the grain before getting measurements
-    grain_dil = morph.dilation(grain.image, selem=morph.selem.square(2)).astype(int)
+    grain_dil = morph.dilation(grain.image, footprint=square(2)).astype(int)
     grain_dil = np.pad(grain_dil, ((1, 1), (1,1)), 'constant')
     b = meas.regionprops(grain_dil)[0].minor_axis_length
     a = meas.regionprops(grain_dil)[0].major_axis_length
